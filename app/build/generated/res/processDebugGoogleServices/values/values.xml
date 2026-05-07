@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">474948910217</string>
+    <string name="google_api_key" translatable="false">AIzaSyDbYDsRGprfHgwOab4pkXFUvB1WMTxc110</string>
+    <string name="google_app_id" translatable="false">1:474948910217:android:87d369d85dad2b94b61a58</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDbYDsRGprfHgwOab4pkXFUvB1WMTxc110</string>
+    <string name="google_storage_bucket" translatable="false">vetcare-fe2da.firebasestorage.app</string>
+    <string name="project_id" translatable="false">vetcare-fe2da</string>
+</resources>

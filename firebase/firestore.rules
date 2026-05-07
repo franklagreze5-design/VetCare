@@ -1,0 +1,193 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // REGLAS DE SEGURIDAD PARA SISTEMA FREEMIUM
+    // ============================================
+    
+    // Funciones helper
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+    
+    function getUserPlan(userId) {
+      return getUserData(userId).subscription.plan;
+    }
+    
+    function isPremiumOrFamily(userId) {
+      let plan = getUserPlan(userId);
+      return plan == 'PREMIUM' || plan == 'FAMILY';
+    }
+    
+    function getPetsCount(userId) {
+      return getUserData(userId).limits.petsCount;
+    }
+    
+    function getRemindersThisMonth(userId) {
+      return getUserData(userId).limits.remindersThisMonth;
+    }
+    
+    // ============================================
+    // COLECCIÓN: users
+    // ============================================
+    match /users/{userId} {
+      // Lectura: solo el propietario
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Creación: solo el propietario puede crear su documento
+      allow create: if isAuthenticated() && isOwner(userId) &&
+        // Asegurar que empieza con plan FREE
+        request.resource.data.subscription.plan == 'FREE';
+      
+      // Actualización: el propietario puede actualizar campos limitados
+      // La suscripción SOLO puede ser actualizada por Cloud Functions
+      allow update: if isAuthenticated() && isOwner(userId) &&
+        // No puede cambiar su propio plan (solo backend puede)
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription']) ||
+         // Permitir solo si no cambia el plan
+         request.resource.data.subscription.plan == resource.data.subscription.plan);
+      
+      // Eliminar: solo el propietario
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // ============================================
+    // COLECCIÓN: pets (mascotas)
+    // ============================================
+    match /users/{userId}/pets/{petId} {
+      // Lectura: solo el propietario
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Creación: verificar límites según plan
+      allow create: if isAuthenticated() && isOwner(userId) &&
+        validatePetCreation(userId);
+      
+      // Actualización: solo el propietario
+      allow update: if isAuthenticated() && isOwner(userId);
+      
+      // Eliminar: solo el propietario
+      allow delete: if isAuthenticated() && isOwner(userId);
+      
+      // Función para validar creación de mascota
+      function validatePetCreation(userId) {
+        let plan = getUserPlan(userId);
+        let currentPets = getPetsCount(userId);
+        
+        // FREE: máximo 1 mascota
+        // PREMIUM: ilimitado
+        // FAMILY: máximo 5 mascotas
+        return (plan == 'FREE' && currentPets < 1) ||
+               (plan == 'PREMIUM') ||
+               (plan == 'FAMILY' && currentPets < 5);
+      }
+    }
+    
+    // ============================================
+    // COLECCIÓN: reminders (recordatorios)
+    // ============================================
+    match /users/{userId}/reminders/{reminderId} {
+      // Lectura: solo el propietario
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Creación: verificar límites según plan
+      allow create: if isAuthenticated() && isOwner(userId) &&
+        validateReminderCreation(userId);
+      
+      // Actualización: solo el propietario
+      allow update: if isAuthenticated() && isOwner(userId);
+      
+      // Eliminar: solo el propietario
+      allow delete: if isAuthenticated() && isOwner(userId);
+      
+      // Función para validar creación de recordatorio
+      function validateReminderCreation(userId) {
+        let plan = getUserPlan(userId);
+        let currentReminders = getRemindersThisMonth(userId);
+        
+        // FREE: máximo 3 por mes
+        // PREMIUM/FAMILY: ilimitado
+        return (plan == 'FREE' && currentReminders < 3) ||
+               (plan == 'PREMIUM') ||
+               (plan == 'FAMILY');
+      }
+    }
+    
+    // ============================================
+    // COLECCIÓN: medical_records (historial médico)
+    // ============================================
+    match /users/{userId}/pets/{petId}/medical_records/{recordId} {
+      // Lectura: solo el propietario
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Creación: propietario puede crear registros básicos
+      // Registros completos (vacunas, archivos) requieren premium
+      allow create: if isAuthenticated() && isOwner(userId) &&
+        validateMedicalRecordCreation(userId);
+      
+      // Actualización: solo el propietario
+      allow update: if isAuthenticated() && isOwner(userId);
+      
+      // Eliminar: solo el propietario
+      allow delete: if isAuthenticated() && isOwner(userId);
+      
+      // Función para validar creación de registro médico
+      function validateMedicalRecordCreation(userId) {
+        let plan = getUserPlan(userId);
+        let recordType = request.resource.data.type;
+        
+        // FREE: solo puede crear consultas básicas
+        // PREMIUM/FAMILY: puede crear cualquier tipo
+        return (plan == 'FREE' && recordType == 'BASIC_CONSULTATION') ||
+               isPremiumOrFamily(userId);
+      }
+    }
+    
+    // ============================================
+    // COLECCIÓN: vaccines (vacunas) - Solo Premium
+    // ============================================
+    match /users/{userId}/pets/{petId}/vaccines/{vaccineId} {
+      // Solo usuarios Premium o Family pueden acceder
+      allow read, write: if isAuthenticated() && isOwner(userId) &&
+        isPremiumOrFamily(userId);
+    }
+    
+    // ============================================
+    // COLECCIÓN: files (archivos) - Solo Premium
+    // ============================================
+    match /users/{userId}/pets/{petId}/files/{fileId} {
+      // Solo usuarios Premium o Family pueden acceder
+      allow read, write: if isAuthenticated() && isOwner(userId) &&
+        isPremiumOrFamily(userId);
+    }
+    
+    // ============================================
+    // COLECCIÓN: shared_profiles (perfiles compartidos)
+    // ============================================
+    match /shared_profiles/{shareId} {
+      // Lectura: cualquiera con el ID puede leer (para veterinarios)
+      allow read: if true;
+      
+      // Creación: solo usuarios Premium o Family pueden compartir
+      allow create: if isAuthenticated() &&
+        isOwner(request.resource.data.ownerId) &&
+        isPremiumOrFamily(request.auth.uid);
+      
+      // Actualización: solo el propietario
+      allow update: if isAuthenticated() &&
+        isOwner(resource.data.ownerId);
+      
+      // Eliminar: solo el propietario
+      allow delete: if isAuthenticated() &&
+        isOwner(resource.data.ownerId);
+    }
+  }
+}

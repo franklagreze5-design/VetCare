@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PetApp</string>
+    
+    <!-- Planes de suscripción -->
+    <string name="plan_free">Plan Gratis</string>
+    <string name="plan_premium">Plan Premium</string>
+    <string name="plan_family">Plan Familia</string>
+    
+    <!-- Precios -->
+    <string name="price_premium_monthly">$3.990 CLP/mes</string>
+    <string name="price_premium_yearly">$39.990 CLP/año</string>
+    <string name="price_family_monthly">$5.490 CLP/mes</string>
+    <string name="free_trial">7 días de prueba gratis</string>
+    <string name="save_percentage">Ahorra %1$d%%</string>
+    
+    <!-- Features -->
+    <string name="feature_pets_limit">Hasta %1$d mascota(s)</string>
+    <string name="feature_unlimited_pets">Mascotas ilimitadas</string>
+    <string name="feature_reminders_limit">%1$d recordatorios/mes</string>
+    <string name="feature_unlimited_reminders">Recordatorios ilimitados</string>
+    <string name="feature_basic_medical">Historial médico básico</string>
+    <string name="feature_full_medical">Historial médico completo</string>
+    <string name="feature_with_ads">Con publicidad</string>
+    <string name="feature_no_ads">Sin publicidad</string>
+    <string name="feature_ai_recommendations">Recomendaciones IA</string>
+    <string name="feature_share_with_vet">Compartir con veterinario</string>
+    
+    <!-- Paywall -->
+    <string name="paywall_title">Desbloquea todo el potencial</string>
+    <string name="paywall_subtitle">Cuida mejor a tus mascotas con funciones premium</string>
+    <string name="subscribe_button">Suscribirse</string>
+    <string name="restore_purchases">Restaurar compras</string>
+    <string name="terms_and_conditions">Términos y condiciones</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="subscription_disclaimer">La suscripción se renueva automáticamente. Puedes cancelar en cualquier momento desde Google Play.</string>
+    
+    <!-- Errores -->
+    <string name="error_purchase_failed">Error al procesar la compra</string>
+    <string name="error_restore_failed">No se encontraron compras anteriores</string>
+    <string name="error_network">Error de conexión. Verifica tu internet.</string>
+    <string name="error_limit_reached">Has alcanzado el límite de tu plan</string>
+    
+    <!-- Límites -->
+    <string name="limit_pets_message">Tu plan permite máximo %1$d mascota(s). Mejora a Premium para agregar más.</string>
+    <string name="limit_reminders_message">Has usado tus %1$d recordatorios del mes. Mejora a Premium para recordatorios ilimitados.</string>
+    
+    <!-- Acciones -->
+    <string name="upgrade_to_premium">Mejorar a Premium</string>
+    <string name="cancel">Cancelar</string>
+    <string name="continue_action">Continuar</string>
+    <string name="close">Cerrar</string>
+</resources>

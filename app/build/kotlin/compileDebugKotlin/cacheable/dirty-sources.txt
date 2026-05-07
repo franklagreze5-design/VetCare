@@ -1,0 +1,16 @@
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\ads\AdBannerCompose.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\data\UserSubscription.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\billing\BillingManager.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\subscription\SubscriptionState.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\ui\paywall\PaywallScreen.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\PetApp.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\features\FeatureConfig.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\di\AppModule.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\features\FeatureGate.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\ui\theme\Theme.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\billing\SubscriptionPlan.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\subscription\SubscriptionViewModel.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\MainActivity.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\ads\AdManager.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\subscription\SubscriptionRepository.kt
+C:\Users\Frank\Downloads\VetCare-20260421T013147Z-3-001\VetCare\b_qZRutPAyzRd\android-pet-app\app\src\main\java\com\petapp\billing\PurchaseHelper.kt
