@@ -5,20 +5,19 @@ import com.google.firebase.FirebaseApp
 import com.petapp.ads.AdManager
 import com.petapp.billing.BillingManager
 import com.petapp.billing.PurchaseHelper
-import com.petapp.billing.ValidationResult
 import com.petapp.subscription.SubscriptionRepository
 
 /**
  * Application class principal
  * 
- * Inicializa los componentes principales del sistema de suscripción:
+ * Inicializa los componentes principales del sistema de suscripcion:
  * - Firebase
  * - Google Play Billing
  * - AdMob
  */
 class PetApp : Application() {
     
-    // Instancias singleton (en producción usar DI como Hilt)
+    // Instancias singleton (en produccion usar DI como Hilt)
     lateinit var subscriptionRepository: SubscriptionRepository
         private set
     
@@ -38,10 +37,10 @@ class PetApp : Application() {
         // Inicializar Firebase
         FirebaseApp.initializeApp(this)
         
-        // Inicializar repositorio de suscripciones
+        // Inicializar repositorio de suscripciones (sin parametros, usa defaults)
         subscriptionRepository = SubscriptionRepository()
         
-        // Inicializar Billing Manager con callback de validación
+        // Inicializar Billing Manager con callback de validacion
         billingManager = BillingManager(
             context = this,
             onPurchaseValidation = { purchase ->

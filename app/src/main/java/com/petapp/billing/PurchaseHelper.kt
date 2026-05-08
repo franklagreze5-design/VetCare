@@ -47,18 +47,15 @@ class PurchaseHelper(
     }
     
     /**
-     * Lanza el flujo de compra para un producto específico
+     * Lanza el flujo de compra para un producto especifico
      */
     private suspend fun launchPurchase(activity: Activity, productId: String): PurchaseResult {
-        // Verificar conexión
         val connectionState = billingManager.connectionState.first()
         if (connectionState !is BillingManager.ConnectionState.Connected) {
             return PurchaseResult.NotConnected
         }
         
-        // Lanzar flujo de compra
         val result = billingManager.launchPurchaseFlow(activity, productId)
-        
         return mapBillingResult(result)
     }
     
@@ -87,7 +84,7 @@ class PurchaseHelper(
     }
     
     /**
-     * Crea información del plan desde ProductDetails
+     * Crea informacion del plan desde ProductDetails
      */
     private fun createPlanInfo(productDetails: ProductDetails): PlanInfo? {
         val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
@@ -105,7 +102,6 @@ class PurchaseHelper(
         
         val isYearly = pricingPhase.billingPeriod.contains("Y")
         
-        // Calcular precio mensual equivalente para planes anuales
         val monthlyEquivalent = if (isYearly) {
             pricingPhase.priceAmountMicros / 12
         } else {
@@ -129,7 +125,7 @@ class PurchaseHelper(
     }
     
     /**
-     * Parsea período ISO 8601 a días
+     * Parsea periodo ISO 8601 a dias
      */
     private fun parsePeriodToDays(period: String): Int {
         return when {
@@ -148,7 +144,7 @@ class PurchaseHelper(
     }
     
     /**
-     * Verifica si hay una suscripción activa
+     * Verifica si hay una suscripcion activa
      */
     suspend fun hasActiveSubscription(): Boolean {
         val purchases = billingManager.queryExistingPurchases()
@@ -159,7 +155,7 @@ class PurchaseHelper(
 }
 
 /**
- * Información completa de un plan para mostrar en UI
+ * Informacion completa de un plan para mostrar en UI
  */
 data class PlanInfo(
     val productId: String,

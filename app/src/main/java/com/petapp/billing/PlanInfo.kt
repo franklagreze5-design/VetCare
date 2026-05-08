@@ -1,34 +1,44 @@
 package com.petapp.billing
 
+// PlanInfo is defined in PurchaseHelper.kt
+// This file is kept for compatibility but the main definition is in PurchaseHelper.kt
+
 /**
- * Información de un plan para mostrar en UI (viene de Google Play)
+ * Periodo de facturacion - moved here to avoid duplication
  */
-data class PlanInfo(
-    val productId: String,
-    val plan: SubscriptionPlan,
-    val formattedPrice: String,
-    val billingPeriod: BillingPeriod,
-    val hasFreeTrial: Boolean = false,
-    val freeTrialDays: Int = 0
-) {
-    /**
-     * Calcula el porcentaje de descuento anual comparado con el plan mensual
-     */
-    fun calculateYearlyDiscountPercent(monthlyPlan: PlanInfo): Int {
-        return PricingConstants.calculateYearlyDiscountPercent()
-    }
+enum class BillingPeriod {
+    MONTHLY,
+    YEARLY
 }
 
 /**
- * Resultado de validación del backend
+ * Informacion de precio para mostrar en UI
  */
-sealed class ValidationResult {
-    data class Valid(
-        val plan: SubscriptionPlan,
-        val expiryTime: Long,
-        val isInTrial: Boolean
-    ) : ValidationResult()
+data class PlanPricing(
+    val productId: String,
+    val plan: SubscriptionPlan,
+    val priceMonthly: String,
+    val priceYearly: String?,
+    val currencyCode: String,
+    val billingPeriod: BillingPeriod,
+    val hasFreeTrial: Boolean,
+    val freeTrialDays: Int
+)
 
-    data class Invalid(val reason: String) : ValidationResult()
-    data class Error(val exception: Exception) : ValidationResult()
+/**
+ * Constantes de precios para Chile (referencia, el precio real viene de Google Play)
+ */
+object PricingConstants {
+    const val PREMIUM_MONTHLY_CLP = 3990
+    const val PREMIUM_YEARLY_CLP = 39990
+    const val FAMILY_MONTHLY_CLP = 5490
+    
+    fun calculateYearlySavings(): Int {
+        return (PREMIUM_MONTHLY_CLP * 12) - PREMIUM_YEARLY_CLP
+    }
+    
+    fun calculateYearlyDiscountPercent(): Int {
+        val monthlyTotal = PREMIUM_MONTHLY_CLP * 12
+        return ((monthlyTotal - PREMIUM_YEARLY_CLP) * 100) / monthlyTotal
+    }
 }

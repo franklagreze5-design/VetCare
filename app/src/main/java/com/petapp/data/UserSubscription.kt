@@ -2,9 +2,11 @@ package com.petapp.data
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
+import com.petapp.billing.SubscriptionPlan
+import com.petapp.billing.SubscriptionStatus
 
 /**
- * Modelo de datos para la suscripción del usuario almacenada en Firestore
+ * Modelo de datos para la suscripcion del usuario almacenada en Firestore
  * 
  * Estructura en Firestore:
  * users/{userId}/subscription
@@ -52,7 +54,7 @@ data class UserSubscription(
     constructor() : this(plan = SubscriptionPlan.FREE.name)
     
     /**
-     * Verifica si la suscripción está activa y no expirada
+     * Verifica si la suscripcion esta activa y no expirada
      */
     fun isActive(): Boolean {
         if (status != SubscriptionStatus.ACTIVE.name) return false
@@ -92,7 +94,7 @@ data class UserSubscription(
 }
 
 /**
- * Modelo para los límites de uso del usuario
+ * Modelo para los limites de uso del usuario
  */
 data class UserLimits(
     @get:PropertyName("petsCount")

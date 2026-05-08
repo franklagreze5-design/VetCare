@@ -18,14 +18,22 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 /**
- * BillingManager - Gestiona la conexión con Google Play Billing Library v7
- * 
- * Responsabilidades:
- * - Conectar y mantener conexión con Google Play
- * - Consultar productos disponibles
- * - Lanzar flujo de compra
- * - Procesar compras completadas
- * - Emitir purchaseToken para validación backend
+ * Resultado de validacion del backend
+ */
+sealed class ValidationResult {
+    data class Valid(
+        val plan: SubscriptionPlan,
+        val expiryTime: Long,
+        val isInTrial: Boolean
+    ) : ValidationResult()
+    
+    data class Invalid(val reason: String) : ValidationResult()
+    
+    data class Error(val exception: Exception) : ValidationResult()
+}
+
+/**
+ * BillingManager - Gestiona la conexion con Google Play Billing Library v7
  */
 class BillingManager(
     private val context: Context,
@@ -54,7 +62,7 @@ class BillingManager(
         .build()
     
     /**
-     * Estados de conexión con Google Play Billing
+     * Estados de conexion con Google Play Billing
      */
     sealed class ConnectionState {
         data object Disconnected : ConnectionState()
@@ -76,8 +84,7 @@ class BillingManager(
     }
     
     /**
-     * Inicia conexión con Google Play Billing
-     * Debe llamarse al iniciar la app
+     * Inicia conexion con Google Play Billing
      */
     fun startConnection() {
         if (_connectionState.value is ConnectionState.Connected) return
@@ -99,14 +106,13 @@ class BillingManager(
             
             override fun onBillingServiceDisconnected() {
                 _connectionState.value = ConnectionState.Disconnected
-                // Intentar reconectar
                 startConnection()
             }
         })
     }
     
     /**
-     * Consulta los productos de suscripción disponibles
+     * Consulta los productos de suscripcion disponibles
      */
     private suspend fun queryAvailableProducts() {
         val productList = SubscriptionPlan.allProductIds.map { productId ->
@@ -128,11 +134,7 @@ class BillingManager(
     }
     
     /**
-     * Lanza el flujo de compra para un producto específico
-     * 
-     * @param activity Activity actual para mostrar el diálogo de compra
-     * @param productId ID del producto (premium_monthly, premium_yearly, family_plan)
-     * @param offerToken Token de la oferta (obtenido de ProductDetails)
+     * Lanza el flujo de compra para un producto especifico
      */
     suspend fun launchPurchaseFlow(
         activity: Activity,
@@ -158,7 +160,7 @@ class BillingManager(
     }
     
     /**
-     * Lanza compra con selección automática de la mejor oferta
+     * Lanza compra con seleccion automatica de la mejor oferta
      */
     suspend fun launchPurchaseFlow(
         activity: Activity,
@@ -170,7 +172,6 @@ class BillingManager(
                 .setDebugMessage("Producto no encontrado: $productId")
                 .build()
         
-        // Obtener la mejor oferta (priorizar trial si disponible)
         val offerToken = getBestOfferToken(productDetails)
             ?: return BillingResult.newBuilder()
                 .setResponseCode(BillingResponseCode.ITEM_UNAVAILABLE)
@@ -182,13 +183,11 @@ class BillingManager(
     
     /**
      * Obtiene el mejor token de oferta para un producto
-     * Prioriza ofertas con trial gratuito
      */
     private fun getBestOfferToken(productDetails: ProductDetails): String? {
         val subscriptionOfferDetails = productDetails.subscriptionOfferDetails
             ?: return null
         
-        // Buscar oferta con trial gratuito primero
         val trialOffer = subscriptionOfferDetails.find { offer ->
             offer.pricingPhases.pricingPhaseList.any { phase ->
                 phase.priceAmountMicros == 0L
@@ -235,12 +234,10 @@ class BillingManager(
             Purchase.PurchaseState.PURCHASED -> {
                 _purchaseEvents.emit(PurchaseEvent.PurchaseCompleted(purchase))
                 
-                // Validar con backend
                 val validationResult = onPurchaseValidation(purchase)
                 
                 when (validationResult) {
                     is ValidationResult.Valid -> {
-                        // Acknowledge la compra después de validación exitosa
                         acknowledgePurchase(purchase)
                         _purchaseEvents.emit(PurchaseEvent.ValidationSuccess(validationResult.plan))
                     }
@@ -250,7 +247,7 @@ class BillingManager(
                     is ValidationResult.Error -> {
                         _purchaseEvents.emit(
                             PurchaseEvent.ValidationFailed(
-                                validationResult.exception.message ?: "Error de validación"
+                                validationResult.exception.message ?: "Error de validacion"
                             )
                         )
                     }
@@ -259,14 +256,12 @@ class BillingManager(
             Purchase.PurchaseState.PENDING -> {
                 _purchaseEvents.emit(PurchaseEvent.PurchasePending(purchase))
             }
-            else -> {
-                // Estado desconocido
-            }
+            else -> {}
         }
     }
     
     /**
-     * Confirma (acknowledge) una compra para evitar reembolso automático
+     * Confirma (acknowledge) una compra
      */
     private suspend fun acknowledgePurchase(purchase: Purchase) {
         if (purchase.isAcknowledged) return
@@ -283,7 +278,7 @@ class BillingManager(
     }
     
     /**
-     * Consulta compras existentes para restaurar suscripciones
+     * Consulta compras existentes
      */
     suspend fun queryExistingPurchases(): List<Purchase> {
         val params = QueryPurchasesParams.newBuilder()
@@ -300,7 +295,7 @@ class BillingManager(
     }
     
     /**
-     * Restaura compras existentes (útil para reinstalaciones)
+     * Restaura compras existentes
      */
     suspend fun restorePurchases(): List<Purchase> {
         val purchases = queryExistingPurchases()
@@ -315,7 +310,7 @@ class BillingManager(
     }
     
     /**
-     * Obtiene información de precio formateada para un producto
+     * Obtiene informacion de precio formateada
      */
     fun getFormattedPrice(productId: String): PlanPricing? {
         val productDetails = _availableProducts.value.find { it.productId == productId }
@@ -355,8 +350,7 @@ class BillingManager(
     }
     
     /**
-     * Parsea período ISO 8601 a días
-     * P7D = 7 días, P1W = 7 días
+     * Parsea periodo ISO 8601 a dias
      */
     private fun parsePeriodToDays(period: String): Int {
         return when {
@@ -371,26 +365,10 @@ class BillingManager(
     }
     
     /**
-     * Cierra la conexión con Billing Client
-     * Llamar cuando ya no se necesite
+     * Cierra la conexion
      */
     fun endConnection() {
         billingClient.endConnection()
         _connectionState.value = ConnectionState.Disconnected
     }
-}
-
-/**
- * Resultado de validación importado desde SubscriptionState
- */
-sealed class ValidationResult {
-    data class Valid(
-        val plan: SubscriptionPlan,
-        val expiryTime: Long,
-        val isInTrial: Boolean
-    ) : ValidationResult()
-    
-    data class Invalid(val reason: String) : ValidationResult()
-    
-    data class Error(val exception: Exception) : ValidationResult()
 }

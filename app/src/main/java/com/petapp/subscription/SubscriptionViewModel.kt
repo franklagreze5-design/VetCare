@@ -7,10 +7,8 @@ import com.petapp.billing.BillingManager
 import com.petapp.billing.PlanInfo
 import com.petapp.billing.PurchaseHelper
 import com.petapp.billing.SubscriptionPlan
-import com.petapp.billing.ValidationResult
-import com.petapp.data.UserSubscription
-import com.petapp.features.FeatureConfig
 import com.petapp.features.PaywallTrigger
+import com.petapp.features.FeatureConfig
 import com.petapp.features.UpgradePrompt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel para la pantalla de suscripción/paywall
+ * ViewModel para la pantalla de suscripcion/paywall
  */
 class SubscriptionViewModel(
     private val repository: SubscriptionRepository,
@@ -40,7 +38,7 @@ class SubscriptionViewModel(
     }
     
     /**
-     * Observa cambios en la suscripción del usuario
+     * Observa cambios en la suscripcion del usuario
      */
     private fun observeSubscription() {
         viewModelScope.launch {
@@ -96,7 +94,6 @@ class SubscriptionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
-            // Esperar a que billing esté conectado
             billingManager.connectionState.collectLatest { state ->
                 if (state is BillingManager.ConnectionState.Connected) {
                     val plans = purchaseHelper.getAvailablePlans()
@@ -113,7 +110,7 @@ class SubscriptionViewModel(
     }
     
     /**
-     * Configura el paywall según el trigger
+     * Configura el paywall segun el trigger
      */
     fun setPaywallTrigger(trigger: PaywallTrigger) {
         val prompt = FeatureConfig.getUpgradePrompt(trigger)
@@ -133,7 +130,7 @@ class SubscriptionViewModel(
     }
     
     /**
-     * Selecciona el período de facturación
+     * Selecciona el periodo de facturacion
      */
     fun selectBillingPeriod(isYearly: Boolean) {
         _uiState.update { it.copy(isYearlySelected = isYearly) }
@@ -165,7 +162,7 @@ class SubscriptionViewModel(
             
             when (result) {
                 is PurchaseHelper.PurchaseResult.Success -> {
-                    // El evento de compra se manejará en observeBillingEvents
+                    // El evento de compra se manejara en observeBillingEvents
                 }
                 is PurchaseHelper.PurchaseResult.Cancelled -> {
                     _purchaseState.value = PurchaseState.Cancelled
@@ -193,7 +190,6 @@ class SubscriptionViewModel(
             val restored = purchaseHelper.restorePurchases()
             
             if (restored) {
-                // El estado se actualizará via observeSubscription
                 _purchaseState.value = PurchaseState.Idle
             } else {
                 _purchaseState.value = PurchaseState.Error("No se encontraron compras anteriores")
