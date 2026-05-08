@@ -9,17 +9,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.petapp.subscription.SubscriptionViewModel
+import com.petapp.subscription.SubscriptionViewModelFactory
 import com.petapp.ui.paywall.PaywallScreen
 import com.petapp.ui.theme.PetAppTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,12 +33,12 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    val app = application as PetApp
 
                     NavHost(
                         navController = navController,
                         startDestination = "home"
                     ) {
-                        // Pantalla principal
                         composable("home") {
                             HomeScreen(
                                 onNavigateToPaywall = {
@@ -50,21 +50,25 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Paywall / Suscripciones
                         composable("paywall") {
-                            val viewModel: SubscriptionViewModel = hiltViewModel()
+                            val viewModel: SubscriptionViewModel = viewModel(
+                                factory = SubscriptionViewModelFactory(
+                                    app.subscriptionRepository,
+                                    app.billingManager,
+                                    app.purchaseHelper
+                                )
+                            )
                             val uiState by viewModel.uiState.collectAsState()
 
                             PaywallScreen(
                                 uiState = uiState,
                                 onSelectPlan = viewModel::selectPlan,
-                                onSubscribe = { viewModel.subscribe(this@MainActivity) },
+                                onSubscribe = { viewModel.purchaseSelectedPlan(this@MainActivity) },
                                 onRestorePurchases = viewModel::restorePurchases,
                                 onDismiss = { navController.popBackStack() }
                             )
                         }
 
-                        // Lista de mascotas
                         composable("pets") {
                             PetsScreen(
                                 onNavigateToPaywall = {
@@ -73,7 +77,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Detalle de mascota
                         composable("pet/{petId}") { backStackEntry ->
                             val petId = backStackEntry.arguments?.getString("petId") ?: ""
                             PetDetailScreen(
@@ -84,7 +87,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Recordatorios
                         composable("reminders") {
                             RemindersScreen(
                                 onNavigateToPaywall = {
