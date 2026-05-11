@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,9 +24,16 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Eliminar local.properties
+        run: rm -f local.properties
+
       - name: Crear google-services.json
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+
+      - name: Decodificar keystore
+        run: |
+          echo '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > app/vetcare-release-key.jks
 
       - name: Dar permisos a Gradle
         run: chmod +x ./gradlew
@@ -41,12 +48,16 @@ jobs:
           restore-keys: |
             gradle-
 
-      - name: Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Compilar APK Release firmado
+        run: ./gradlew assembleRelease --stacktrace
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Subir APK como artefacto
+      - name: Subir APK Release
         uses: actions/upload-artifact@v4
         with:
-          name: VetCare-debug
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
+          name: VetCare-release
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
