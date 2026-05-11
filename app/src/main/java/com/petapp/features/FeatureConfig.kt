@@ -1,17 +1,123 @@
 package com.petapp.features
 
-/**
- * Prompt de upgrade para mostrar en el paywall
- */
+import com.petapp.billing.SubscriptionPlan
+
+object FeatureConfig {
+
+    fun getPlanConfig(plan: SubscriptionPlan): PlanConfiguration {
+        return when (plan) {
+            SubscriptionPlan.FREE -> PlanConfiguration(
+                name = "Gratis",
+                tagline = "Perfecto para empezar",
+                features = listOf(
+                    FeatureItem("1 mascota", true),
+                    FeatureItem("Historial médico básico", true),
+                    FeatureItem("3 recordatorios/mes", true),
+                    FeatureItem("Veterinarias cercanas", true, "con publicidad"),
+                    FeatureItem("Vacunas y archivos", false),
+                    FeatureItem("Compartir con veterinario", false),
+                    FeatureItem("Sin publicidad", false),
+                    FeatureItem("Recomendaciones IA", false)
+                ),
+                isRecommended = false,
+                badgeText = null
+            )
+            SubscriptionPlan.PREMIUM -> PlanConfiguration(
+                name = "Premium",
+                tagline = "Todo lo que necesitas",
+                features = listOf(
+                    FeatureItem("Mascotas ilimitadas", true),
+                    FeatureItem("Historial médico completo", true),
+                    FeatureItem("Recordatorios ilimitados", true),
+                    FeatureItem("Veterinarias cercanas", true, "sin publicidad"),
+                    FeatureItem("Vacunas y archivos", true),
+                    FeatureItem("Compartir con veterinario", true),
+                    FeatureItem("Sin publicidad", true),
+                    FeatureItem("Recomendaciones IA", true)
+                ),
+                isRecommended = true,
+                badgeText = "Mas popular"
+            )
+            SubscriptionPlan.FAMILY -> PlanConfiguration(
+                name = "Family",
+                tagline = "Para toda la familia",
+                features = listOf(
+                    FeatureItem("Hasta 5 mascotas", true),
+                    FeatureItem("Historial médico completo", true),
+                    FeatureItem("Recordatorios ilimitados", true),
+                    FeatureItem("Veterinarias cercanas", true, "sin publicidad"),
+                    FeatureItem("Vacunas y archivos", true),
+                    FeatureItem("Compartir con veterinario", true),
+                    FeatureItem("Sin publicidad", true),
+                    FeatureItem("Recomendaciones IA", true)
+                ),
+                isRecommended = false,
+                badgeText = "Ideal familias"
+            )
+        }
+    }
+
+    fun getUpgradePrompt(trigger: PaywallTrigger): UpgradePrompt {
+        return when (trigger) {
+            PaywallTrigger.MANUAL -> UpgradePrompt(
+                title = "Mejora tu experiencia",
+                subtitle = "Desbloquea todas las funcionalidades premium",
+                ctaText = "Ver planes"
+            )
+            PaywallTrigger.PET_LIMIT_REACHED -> UpgradePrompt(
+                title = "Has alcanzado el limite",
+                subtitle = "Actualiza a Premium para agregar mas mascotas",
+                ctaText = "Desbloquear mascotas"
+            )
+            PaywallTrigger.REMINDER_LIMIT_REACHED -> UpgradePrompt(
+                title = "Limite de recordatorios alcanzado",
+                subtitle = "Obtén recordatorios ilimitados con Premium",
+                ctaText = "Obtener ilimitados"
+            )
+            PaywallTrigger.VACCINE_ACCESS -> UpgradePrompt(
+                title = "Control de vacunas",
+                subtitle = "Lleva el registro de vacunas de tu mascota",
+                ctaText = "Activar vacunas"
+            )
+            PaywallTrigger.FILE_UPLOAD -> UpgradePrompt(
+                title = "Guarda archivos y fotos",
+                subtitle = "Almacena documentos y fotos médicas",
+                ctaText = "Activar archivos"
+            )
+            PaywallTrigger.SHARE_WITH_VET -> UpgradePrompt(
+                title = "Comparte con tu veterinario",
+                subtitle = "Envía la ficha completa de tu mascota",
+                ctaText = "Activar compartir"
+            )
+            PaywallTrigger.AI_RECOMMENDATIONS -> UpgradePrompt(
+                title = "Recomendaciones inteligentes",
+                subtitle = "Obtén consejos personalizados con IA",
+                ctaText = "Activar IA"
+            )
+        }
+    }
+}
+
+data class PlanConfiguration(
+    val name: String,
+    val tagline: String,
+    val features: List<FeatureItem>,
+    val isRecommended: Boolean,
+    val badgeText: String?
+)
+
+data class FeatureItem(
+    val text: String,
+    val isIncluded: Boolean,
+    val note: String? = null
+)
+
 data class UpgradePrompt(
     val title: String,
     val subtitle: String,
     val ctaText: String
 )
 
-/**
- * Razones por las que se muestra el paywall
- */
 enum class PaywallTrigger {
     MANUAL,
     PET_LIMIT_REACHED,
@@ -20,50 +126,4 @@ enum class PaywallTrigger {
     FILE_UPLOAD,
     SHARE_WITH_VET,
     AI_RECOMMENDATIONS
-}
-
-/**
- * Configuración de mensajes de upgrade según el trigger
- */
-object FeatureConfig {
-
-    fun getUpgradePrompt(trigger: PaywallTrigger): UpgradePrompt {
-        return when (trigger) {
-            PaywallTrigger.PET_LIMIT_REACHED -> UpgradePrompt(
-                title = "¡Tienes más mascotas!",
-                subtitle = "Con Premium puedes agregar mascotas ilimitadas",
-                ctaText = "Agregar más mascotas"
-            )
-            PaywallTrigger.REMINDER_LIMIT_REACHED -> UpgradePrompt(
-                title = "Límite de recordatorios alcanzado",
-                subtitle = "Con Premium crea recordatorios sin límite",
-                ctaText = "Desbloquear recordatorios"
-            )
-            PaywallTrigger.VACCINE_ACCESS -> UpgradePrompt(
-                title = "Control de vacunas",
-                subtitle = "Registra y programa las vacunas de tus mascotas",
-                ctaText = "Ver planes"
-            )
-            PaywallTrigger.FILE_UPLOAD -> UpgradePrompt(
-                title = "Guarda documentos médicos",
-                subtitle = "Sube fotos, recetas y resultados de exámenes",
-                ctaText = "Desbloquear almacenamiento"
-            )
-            PaywallTrigger.SHARE_WITH_VET -> UpgradePrompt(
-                title = "Comparte con tu veterinario",
-                subtitle = "Envía la ficha completa de tu mascota al instante",
-                ctaText = "Compartir con veterinario"
-            )
-            PaywallTrigger.AI_RECOMMENDATIONS -> UpgradePrompt(
-                title = "Recomendaciones inteligentes",
-                subtitle = "Recibe consejos personalizados con IA para tus mascotas",
-                ctaText = "Activar IA"
-            )
-            PaywallTrigger.MANUAL -> UpgradePrompt(
-                title = "Mejora tu experiencia",
-                subtitle = "Desbloquea todas las funcionalidades premium",
-                ctaText = "Ver planes"
-            )
-        }
-    }
 }
