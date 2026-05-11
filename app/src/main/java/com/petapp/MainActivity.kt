@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -35,18 +34,11 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val app = application as PetApp
 
-                    NavHost(
-                        navController = navController,
-                        startDestination = "home"
-                    ) {
+                    NavHost(navController = navController, startDestination = "home") {
                         composable("home") {
                             HomeScreen(
-                                onNavigateToPaywall = {
-                                    navController.navigate("paywall")
-                                },
-                                onNavigateToPets = {
-                                    navController.navigate("pets")
-                                }
+                                onNavigateToPaywall = { navController.navigate("paywall") },
+                                onNavigateToPets = { navController.navigate("pets") }
                             )
                         }
 
@@ -59,40 +51,26 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                             val uiState by viewModel.uiState.collectAsState()
-
                             PaywallScreen(
                                 uiState = uiState,
                                 onSelectPlan = viewModel::selectPlan,
-                                onSubscribe = { viewModel.purchaseSelectedPlan(this@MainActivity) },
+                                onSubscribe = { viewModel.subscribe(this@MainActivity) },
                                 onRestorePurchases = viewModel::restorePurchases,
                                 onDismiss = { navController.popBackStack() }
                             )
                         }
 
                         composable("pets") {
-                            PetsScreen(
-                                onNavigateToPaywall = {
-                                    navController.navigate("paywall")
-                                }
-                            )
+                            PetsScreen(onNavigateToPaywall = { navController.navigate("paywall") })
                         }
 
                         composable("pet/{petId}") { backStackEntry ->
                             val petId = backStackEntry.arguments?.getString("petId") ?: ""
-                            PetDetailScreen(
-                                petId = petId,
-                                onNavigateToPaywall = {
-                                    navController.navigate("paywall")
-                                }
-                            )
+                            PetDetailScreen(petId = petId, onNavigateToPaywall = { navController.navigate("paywall") })
                         }
 
                         composable("reminders") {
-                            RemindersScreen(
-                                onNavigateToPaywall = {
-                                    navController.navigate("paywall")
-                                }
-                            )
+                            RemindersScreen(onNavigateToPaywall = { navController.navigate("paywall") })
                         }
                     }
                 }
